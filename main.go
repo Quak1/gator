@@ -42,6 +42,7 @@ func main() {
 	commands.register("reset", handleDeleteAllUsers)
 	commands.register("users", handleGetUsers)
 	commands.register("agg", handlerAgg)
+	commands.register("addfeed", handleAddFeed)
 
 	if len(os.Args) < 2 {
 		log.Fatal("usage: <command> [args...]")
