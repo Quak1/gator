@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 
@@ -40,6 +39,7 @@ func main() {
 	}
 	commands.register("login", handlerLogin)
 	commands.register("register", handlerRegister)
+	commands.register("reset", handleDeleteAllUsers)
 
 	if len(os.Args) < 2 {
 		log.Fatal("usage: <command> [args...]")

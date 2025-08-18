@@ -50,3 +50,13 @@ func handlerRegister(s *state, cmd command) error {
 
 	return nil
 }
+
+func handleDeleteAllUsers(s *state, cmd command) error {
+	if err := s.db.DeleteUsers(context.Background()); err != nil {
+		return fmt.Errorf("error clearing users table: %w", err)
+	}
+
+	fmt.Println("users table cleared successfully")
+
+	return nil
+}

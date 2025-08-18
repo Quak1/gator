@@ -17,7 +17,7 @@ VALUES (
     $2,
     $3
 )
-RETURNING id, created_at, updated_at, name
+RETURNING id, name, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -31,15 +31,24 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.Name,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Name,
 	)
 	return i, err
 }
 
+const deleteUsers = `-- name: DeleteUsers :exec
+DELETE FROM users
+`
+
+func (q *Queries) DeleteUsers(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteUsers)
+	return err
+}
+
 const getUser = `-- name: GetUser :one
-SELECT id, created_at, updated_at, name FROM users
+SELECT id, name, created_at, updated_at FROM users
 WHERE name = $1 LIMIT 1
 `
 
@@ -48,9 +57,9 @@ func (q *Queries) GetUser(ctx context.Context, name string) (User, error) {
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.Name,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Name,
 	)
 	return i, err
 }
