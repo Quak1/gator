@@ -60,3 +60,21 @@ func handleDeleteAllUsers(s *state, cmd command) error {
 
 	return nil
 }
+
+func handleGetUsers(s *state, cmd command) error {
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		return fmt.Errorf("error getting users: %w", err)
+	}
+
+	for _, user := range users {
+		name := user.Name
+		fmt.Printf("* %s", name)
+		if name == s.cfg.CurrentUsername {
+			fmt.Printf(" (current)")
+		}
+		fmt.Println()
+	}
+
+	return nil
+}
