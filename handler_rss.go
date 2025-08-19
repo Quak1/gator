@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/Quak1/gator/internal/database"
@@ -19,14 +20,17 @@ func handlerAgg(s *state, cmd command) error {
 		return fmt.Errorf("error parsing interval: %w", err)
 	}
 
-	fmt.Printf("Printing feeds every %s\n", duration)
+	fmt.Printf("Processing feeds every %s\n", duration)
 
 	ticker := time.NewTicker(duration)
 	defer ticker.Stop()
 
 	scrapeFeeds(s)
 	for range ticker.C {
-		scrapeFeeds(s)
+		err := scrapeFeeds(s)
+		if err != nil {
+			fmt.Printf("error scraping feed: %v\n", err)
+		}
 	}
 
 	return nil
@@ -146,6 +150,30 @@ func handlerFollowing(s *state, cmd command) error {
 
 	for _, feed := range feeds {
 		fmt.Printf(" - %s\n", feed.FeedName)
+	}
+
+	return nil
+}
+
+func handlerBrowse(s *state, cmd command, user database.User) error {
+	limit := 2
+	if len(cmd.Args) == 1 {
+		var err error
+		if limit, err = strconv.Atoi(cmd.Args[0]); err != nil {
+			return fmt.Errorf("usage: %s [post_count]", cmd.Name)
+		}
+	}
+
+	posts, err := s.db.GetPostsForUser(context.Background(), database.GetPostsForUserParams{
+		UserID: user.ID,
+		Limit:  int32(limit),
+	})
+	if err != nil {
+		return fmt.Errorf("error getting posts: %w", err)
+	}
+
+	for _, post := range posts {
+		fmt.Printf(" - %s | %s\n", post.Title, post.Url)
 	}
 
 	return nil

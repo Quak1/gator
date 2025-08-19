@@ -84,10 +84,25 @@ func scrapeFeeds(s *state) error {
 		return err
 	}
 
-	println(feed.Channel.Title)
 	for _, item := range feed.Channel.Item {
-		fmt.Printf("  - %s\n", item.Title)
+		pubDate, err := time.Parse(time.RFC1123Z, item.PubDate)
+		if err != nil {
+			return fmt.Errorf("error parsing time for post %s: %w", item.Title, err)
+		}
+
+		err = s.db.CreatePost(context.Background(), database.CreatePostParams{
+			Title:       item.Title,
+			Url:         item.Link,
+			Description: sql.NullString{String: item.Description, Valid: item.Description != ""},
+			FeedID:      nextFeed.ID,
+			PublishedAt: pubDate,
+		})
+		if err != nil {
+			fmt.Printf("error saving post: %v\n", err)
+		}
 	}
+
+	fmt.Printf("processed %d posts from '%s'\n", len(feed.Channel.Item), feed.Channel.Title)
 
 	return nil
 }

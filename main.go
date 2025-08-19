@@ -47,6 +47,7 @@ func main() {
 	commands.register("follow", handlerFollow)
 	commands.register("unfollow", middlewareLoggedIn(handlerUnfollow))
 	commands.register("following", handlerFollowing)
+	commands.register("browse", middlewareLoggedIn(handlerBrowse))
 
 	if len(os.Args) < 2 {
 		log.Fatal("usage: <command> [args...]")
