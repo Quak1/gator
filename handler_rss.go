@@ -9,13 +9,26 @@ import (
 )
 
 func handlerAgg(s *state, cmd command) error {
-	url := "https://www.wagslane.dev/index.xml"
-	feed, err := fetchFeed(context.Background(), url)
+	if len(cmd.Args) != 1 {
+		return fmt.Errorf("usage: %s <interval>", cmd.Name)
+	}
+	interval := cmd.Args[0]
+
+	duration, err := time.ParseDuration(interval)
 	if err != nil {
-		return err
+		return fmt.Errorf("error parsing interval: %w", err)
 	}
 
-	fmt.Println(feed)
+	fmt.Printf("Printing feeds every %s\n", duration)
+
+	ticker := time.NewTicker(duration)
+	defer ticker.Stop()
+
+	scrapeFeeds(s)
+	for range ticker.C {
+		scrapeFeeds(s)
+	}
+
 	return nil
 }
 

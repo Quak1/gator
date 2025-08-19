@@ -2,11 +2,15 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/xml"
 	"fmt"
 	"html"
 	"io"
 	"net/http"
+	"time"
+
+	"github.com/Quak1/gator/internal/database"
 )
 
 type RSSFeed struct {
@@ -58,4 +62,32 @@ func fetchFeed(ctx context.Context, feedUrl string) (*RSSFeed, error) {
 	}
 
 	return feed, nil
+}
+
+func scrapeFeeds(s *state) error {
+	nextFeed, err := s.db.GetNextFeedToFetch(context.Background())
+	if err != nil {
+		return err
+	}
+
+	feed, err := fetchFeed(context.Background(), nextFeed.Url)
+	if err != nil {
+		return err
+	}
+
+	err = s.db.MarkFeedFetched(context.Background(), database.MarkFeedFetchedParams{
+		ID:            nextFeed.ID,
+		LastFetchedAt: sql.NullTime{Time: time.Now(), Valid: true},
+		UpdatedAt:     time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+
+	println(feed.Channel.Title)
+	for _, item := range feed.Channel.Item {
+		fmt.Printf("  - %s\n", item.Title)
+	}
+
+	return nil
 }
