@@ -44,6 +44,8 @@ func main() {
 	commands.register("agg", handlerAgg)
 	commands.register("addfeed", handleAddFeed)
 	commands.register("feeds", handlerFeeds)
+	commands.register("follow", handlerFollow)
+	commands.register("following", handlerFollowing)
 
 	if len(os.Args) < 2 {
 		log.Fatal("usage: <command> [args...]")
